@@ -1,0 +1,26 @@
+HKCR
+{
+	Tomato.ASIK.COM.MFIOProvider.1 = s 'MFIOProvider Class'
+	{
+		CLSID = s '{D6A0DE03-0132-4C5C-B5A1-A24ABB9E9B29}'
+	}
+	Tomato.ASIK.COM.MFIOProvider = s 'MFIOProvider Class'
+	{		
+		CurVer = s 'Tomato.ASIK.COM.MFIOProvider.1'
+	}
+	NoRemove CLSID
+	{
+		ForceRemove {D6A0DE03-0132-4C5C-B5A1-A24ABB9E9B29} = s 'MFIOProvider Class'
+		{
+			ProgID = s 'Tomato.ASIK.COM.MFIOProvider.1'
+			VersionIndependentProgID = s 'Tomato.ASIK.COM.MFIOProvider'
+			ForceRemove Programmable
+			InprocServer32 = s '%MODULE%'
+			{
+				val ThreadingModel = s 'Apartment'
+			}
+			TypeLib = s '{CB5A590D-0E69-47B5-A78C-09889E691D5E}'
+			Version = s '1.0'
+		}
+	}
+}
