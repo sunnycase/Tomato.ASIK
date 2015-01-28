@@ -4,6 +4,7 @@
 #include "MFIOProvider.h"
 
 using namespace Tomato;
+using namespace Tomato::ASIK::Core;
 using namespace Tomato::ASIK::Core::IO;
 
 // CMFIOProvider
@@ -58,6 +59,34 @@ STDMETHODIMP CMFIOProvider::LoadFile(LPCWSTR fileName, DWORD* bufferSize)
 
 STDMETHODIMP CMFIOProvider::ReadAllSamples(SAFEARRAY* buffer)
 {
-	this->buffer.read((BYTE*)buffer->pvData, buffer->rgsabound[0].cElements);
+	if (!samples)
+	{
+		auto samples_count = this->buffer.tell_not_get() / sizeof(short);
+		samples = std::make_unique<short[]>(samples_count);
+		this->buffer.read((byte*)samples.get(), this->buffer.tell_not_get());
+		CreateSpectrogram(spectr);
+		spectr->set_input(samples.get(), samples_count);
+	}
+	memcpy_s((BYTE*)buffer->pvData, buffer->rgsabound[0].cElements, samples.get(), this->buffer.count());
+
+	return S_OK;
+}
+
+
+STDMETHODIMP CMFIOProvider::PrepareSpectrogram(DWORD* width, DWORD* height)
+{
+	if (specData.empty())
+	{
+		specData = spectr->draw(img_Width, img_Height);
+	}
+	*width = img_Width;
+	*height = img_Height;
+	return S_OK;
+}
+
+STDMETHODIMP CMFIOProvider::DrawSpectrogram(SAFEARRAY * buffer)
+{
+	memcpy_s((FLOAT*)buffer->pvData, buffer->rgsabound[0].cElements * sizeof(float),
+		specData.data(), specData.size() * sizeof(float));
 	return S_OK;
 }

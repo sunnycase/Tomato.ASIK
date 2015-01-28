@@ -21,6 +21,8 @@
 #include <Mferror.h>
 #include <mfidl.h>
 #include <mfreadwrite.h>
+#include <amp_math.h>
 
 #include "../include/win32_exception.h"
 #include "../include/mfhelpers.hpp"
+#include "../vendors/ampfft/inc/amp_fft.h"

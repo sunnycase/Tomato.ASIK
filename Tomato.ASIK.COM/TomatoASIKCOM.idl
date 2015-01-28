@@ -34,6 +34,8 @@ interface IMFIOProvider : IDispatch{
 	[id(1), helpstring("初始化")] HRESULT Initialize();
 	[id(2), helpstring("加载文件")] HRESULT LoadFile([in] LPCWSTR fileName, [out] DWORD* bufferSize);
 	[id(3), helpstring("读取所有采样")] HRESULT ReadAllSamples([in, out] SAFEARRAY(BYTE) buffer);
+	[id(4)] HRESULT PrepareSpectrogram([out] DWORD* width, [out] DWORD* height);
+	[id(5)] HRESULT DrawSpectrogram([in, out] SAFEARRAY(FLOAT) buffer);
 };
 [
 	uuid(CB5A590D-0E69-47B5-A78C-09889E691D5E),

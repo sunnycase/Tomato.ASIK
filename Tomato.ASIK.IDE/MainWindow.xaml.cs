@@ -52,6 +52,7 @@ namespace Tomato.ASIK.IDE
                 points.Add(new DoublePoint { Data = i, Value = data[i] });
 
             sc_WaveChart.Series[0].Points = points;
+            img_Spectrogram.Source = DrawSpectrogram();
         }
 
         async Task<short[]> LoadData(string fileName)
@@ -64,7 +65,7 @@ namespace Tomato.ASIK.IDE
             });
             var buffer = new byte[bufferSize];
             provider.ReadAllSamples(buffer);
-
+            
             var waveData = new short[bufferSize / 2];
             Buffer.BlockCopy(buffer, 0, waveData, 0, (int)bufferSize);
             return waveData;
@@ -81,6 +82,26 @@ namespace Tomato.ASIK.IDE
                 ViewBag.Path = dlg.FileName;
                 ShowData(dlg.FileName);
             }
+        }
+
+        private BitmapSource DrawSpectrogram()
+        {
+            uint width, height;
+            provider.PrepareSpectrogram(out width, out height);
+            var specData = new float[width * height];
+            provider.DrawSpectrogram(specData);
+            var imgData = new byte[width * height];
+            for (int x = 0; x < width; x++)
+            {
+                for (int y = 0; y < height; y++)
+                {
+                    imgData[x * height + y] = (byte)(255.0f * specData[x * height + height - y - 1]);
+                }
+            }
+
+            var img = BitmapSource.Create((int)width, (int)height, 96.0, 96.0, PixelFormats.Indexed8,
+                BitmapPalettes.Gray256, imgData, (int)width);
+            return img;
         }
     }
 }

@@ -8,11 +8,12 @@
         xmlns:sparrow="http://sparrowtoolkit.codeplex.com/wpf"
         mc:Ignorable="d"
         DataContext="{Binding ViewBag, RelativeSource={RelativeSource Self}}"
-        Title="Wave Presenter" Height="360.769" Width="691.923">
+        Title="Wave Presenter" Height="575.843" Width="948.624">
     <Grid Margin="5">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
+            <RowDefinition Height="1*"/>
+            <RowDefinition Height="1*"/>
         </Grid.RowDefinitions>
         <Grid>
             <Grid.ColumnDefinitions>
@@ -36,5 +37,8 @@
             </sparrow:SparrowChart.YAxis>
             <sparrow:LineSeries Label="Value" UseSinglePart="True"/>
         </sparrow:SparrowChart>
+        <Grid Grid.Row="2">
+            <Image Name="img_Spectrogram" Stretch="Fill"/>
+        </Grid>
     </Grid>
 </com:Window>

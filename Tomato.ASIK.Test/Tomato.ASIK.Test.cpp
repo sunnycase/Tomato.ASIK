@@ -4,6 +4,7 @@
 #include "stdafx.h"
 
 using namespace Tomato;
+using namespace Tomato::ASIK::Core;
 using namespace Tomato::ASIK::Core::IO;
 
 concurrency::task<void> read_sample(io_provider* provider, block_buffer<byte>& buffer)
@@ -45,6 +46,15 @@ int _tmain(int argc, _TCHAR* argv[])
 			std::cout << "End of file." << std::endl;
 		}
 	}).get();
+	auto samples_count = buffer.tell_not_get() / sizeof(short);
+	auto samples = std::make_unique<short[]>(samples_count);
+	buffer.read((byte*)samples.get(), buffer.tell_not_get());
+
+	std::unique_ptr<spectrogram> spectrogram;
+	CreateSpectrogram(spectrogram);
+	spectrogram->set_input(samples.get(), samples_count);
+	size_t width, height;
+	auto image_data = spectrogram->draw(width, height);
 
 	system("pause");
 

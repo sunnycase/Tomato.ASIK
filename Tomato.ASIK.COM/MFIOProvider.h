@@ -67,6 +67,13 @@ public:
 private:
 	std::unique_ptr<Tomato::ASIK::Core::IO::io_provider> provider;
 	Tomato::block_buffer<byte> buffer;
+	std::unique_ptr<short[]> samples;
+	std::unique_ptr<Tomato::ASIK::Core::spectrogram> spectr;
+	std::vector<float> specData;
+	size_t img_Width, img_Height;
+public:
+	STDMETHOD(PrepareSpectrogram)(DWORD* width, DWORD* height);
+STDMETHOD(DrawSpectrogram)(SAFEARRAY * buffer);
 };
 
 OBJECT_ENTRY_AUTO(__uuidof(MFIOProvider), CMFIOProvider)

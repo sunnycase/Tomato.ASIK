@@ -17,3 +17,4 @@
 // TODO:  在此处引用程序需要的其他头文件
 #include "../include/core/io/io.h"
 #include "../include/block_buffer.hpp"
+#include "../include/core/spectrogram.h"

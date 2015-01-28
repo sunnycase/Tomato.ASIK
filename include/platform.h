@@ -36,3 +36,7 @@ typedef uint8_t byte;
 #endif
 
 #define ASIKCALL _stdcall
+
+#define NSDEF_ASIK_CORE namespace Tomato{namespace ASIK{namespace Core{
+#define NSED_ASIK_CORE }}}
+#define NS_ASIK_CORE Tomato::ASIK::Core
