@@ -1,0 +1,40 @@
+﻿<com:Window x:Class="Tomato.ASIK.IDE.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Tomato.ASIK.IDE"
+        xmlns:com="clr-namespace:Tomato.ASIK.Common"
+        xmlns:sparrow="http://sparrowtoolkit.codeplex.com/wpf"
+        mc:Ignorable="d"
+        DataContext="{Binding ViewBag, RelativeSource={RelativeSource Self}}"
+        Title="Wave Presenter" Height="360.769" Width="691.923">
+    <Grid Margin="5">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock>音频文件</TextBlock>
+            <TextBox Grid.Column="1" Text="{Binding Path}"/>
+            <Button Grid.Column="2" Click="bn_Browse_Click">浏览</Button>
+        </Grid>
+        <sparrow:SparrowChart Grid.Row="1" Name="sc_WaveChart">
+            <sparrow:SparrowChart.Legend>
+                <sparrow:Legend/>
+            </sparrow:SparrowChart.Legend>
+            <sparrow:SparrowChart.XAxis>
+                <sparrow:LinearXAxis ShowCrossLines="False"  MinValue="0" MaxValue="{Binding MaxXValue}"/>
+            </sparrow:SparrowChart.XAxis>
+            <sparrow:SparrowChart.YAxis>
+                <sparrow:LinearYAxis ShowCrossLines="False"  MinValue="-32768" MaxValue="32767"/>
+            </sparrow:SparrowChart.YAxis>
+            <sparrow:LineSeries Label="Value" UseSinglePart="True"/>
+        </sparrow:SparrowChart>
+    </Grid>
+</com:Window>

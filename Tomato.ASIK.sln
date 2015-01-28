@@ -4,6 +4,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 14.0.22310.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tomato.ASIK.IDE", "Tomato.ASIK.IDE\Tomato.ASIK.IDE.csproj", "{314554EA-BD45-40A1-BAC1-1B0B0E51020C}"
+	ProjectSection(ProjectDependencies) = postProject
+		{CAB6C3FC-4317-4EEB-A832-A4BFB12AB931} = {CAB6C3FC-4317-4EEB-A832-A4BFB12AB931}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Tomato.ASIK.Core", "Tomato.ASIK.Core\Tomato.ASIK.Core.vcxproj", "{5971AB12-940B-4CFA-B8CC-68F4488AB4C2}"
 EndProject
