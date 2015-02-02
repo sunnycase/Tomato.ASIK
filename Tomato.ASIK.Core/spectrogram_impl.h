@@ -6,6 +6,7 @@
 // 创建日期: 2015-01-28
 #pragma once
 #include "../include/core/spectrogram.h"
+#include <amp_graphics.h>
 
 NSDEF_ASIK_CORE
 
@@ -20,13 +21,17 @@ public:
 	virtual void ASIKCALL set_fft_size(size_t value);
 	virtual size_t ASIKCALL get_step_size() const noexcept;
 	virtual void ASIKCALL set_step_size(size_t value);
-	virtual std::vector<float> ASIKCALL draw(size_t& width, size_t& height);
+	virtual void ASIKCALL draw();
+	virtual std::vector<uint32_t> ASIKCALL get_output(size_t& width, size_t& height);
 private:
 	void sample_fft_input(size_t step);
 private:
 	size_t fft_size;
 	size_t step_size;
+	size_t width;
+	size_t height;
 	std::unique_ptr<concurrency::array<float, 1>> input_buffer;
+	std::unique_ptr<concurrency::graphics::texture<concurrency::graphics::uint_4, 2>> output_buffer;
 	concurrency::extent<1> fft_buffer_ext;
 	concurrency::array<float, 1> fft_input_buffer;
 	concurrency::array<std::complex<float>, 1> fft_output_buffer;

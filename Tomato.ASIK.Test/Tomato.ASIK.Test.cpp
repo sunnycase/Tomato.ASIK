@@ -18,22 +18,15 @@ concurrency::task<void> read_sample(io_provider* provider, block_buffer<byte>& b
 	});
 }
 
-int _tmain(int argc, _TCHAR* argv[])
+std::vector<uint32_t> produce_spectrogram(const WAVEFORMATEX* format, const std::wstring& fileName)
 {
 	std::unique_ptr<io_provider> provider;
 	CreateMFIOProvider(provider);
 
-	provider->set_input(LR"(D:\Media\Music\Vocal\luv letter.mp3)");
+	provider->set_input(fileName);
+	provider->set_output_type(format);
 
-	WAVEFORMATEX format = { 0 };
-	format.wFormatTag = WAVE_FORMAT_PCM;
-	format.nChannels = 1;
-	format.wBitsPerSample = 16;
-	format.nSamplesPerSec = 8000;
-	format.nBlockAlign = format.wBitsPerSample * format.nChannels / 8;
-	format.nAvgBytesPerSec = format.nBlockAlign * format.nSamplesPerSec;
-	provider->set_output_type(&format);
-
+	auto time1 = clock();
 	block_buffer<byte> buffer(4096);
 	read_sample(provider.get(), buffer).then([](concurrency::task<void> t)
 	{
@@ -43,7 +36,6 @@ int _tmain(int argc, _TCHAR* argv[])
 		}
 		catch (...)
 		{
-			std::cout << "End of file." << std::endl;
 		}
 	}).get();
 	auto samples_count = buffer.tell_not_get() / sizeof(short);
@@ -53,8 +45,37 @@ int _tmain(int argc, _TCHAR* argv[])
 	std::unique_ptr<spectrogram> spectrogram;
 	CreateSpectrogram(spectrogram);
 	spectrogram->set_input(samples.get(), samples_count);
+	spectrogram->draw();
 	size_t width, height;
-	auto image_data = spectrogram->draw(width, height);
+	auto image_data = spectrogram->get_output(width, height);
+	auto time2 = clock();
+
+	auto relFileName = fileName.substr(fileName.find_last_of(L'\\') + 1);
+	std::wcout << relFileName << L'(' << width << L'x' << height << L") Used: "
+		<< float(time2 - time1) / CLOCKS_PER_SEC << L"sec." << std::endl;
+	return image_data;
+}
+
+int _tmain(int argc, _TCHAR* argv[])
+{
+	std::locale::global(std::locale(""));
+
+	WAVEFORMATEX format = { 0 };
+	format.wFormatTag = WAVE_FORMAT_PCM;
+	format.nChannels = 1;
+	format.wBitsPerSample = 16;
+	format.nSamplesPerSec = 44100;
+	format.nBlockAlign = format.wBitsPerSample * format.nChannels / 8;
+	format.nAvgBytesPerSec = format.nBlockAlign * format.nSamplesPerSec;
+
+	for (size_t i = 1; i <= 500; i++)
+	{
+		std::wstringstream ss;
+		ss << LR"(D:\Work\Projects\Science\Tomato.ASIK\references\UCR_Contest\Train\)";
+		ss << std::setfill(L'0') << std::setw(4) << i << L".wav";
+
+		produce_spectrogram(&format, ss.str());
+	}
 
 	system("pause");
 

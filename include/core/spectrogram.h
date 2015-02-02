@@ -18,7 +18,8 @@ public:
 	virtual void ASIKCALL set_fft_size(size_t value) = 0;
 	virtual size_t ASIKCALL get_step_size() const noexcept = 0;
 	virtual void ASIKCALL set_step_size(size_t value) = 0;
-	virtual std::vector<float> ASIKCALL draw(size_t& width, size_t& height) = 0;
+	virtual void ASIKCALL draw() = 0;
+	virtual std::vector<uint32_t> ASIKCALL get_output(size_t& width, size_t& height) = 0;
 };
 
 NSED_ASIK_CORE

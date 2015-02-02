@@ -37,7 +37,7 @@ STDMETHODIMP CMFIOProvider::LoadFile(LPCWSTR fileName, DWORD* bufferSize)
 	format.wFormatTag = WAVE_FORMAT_PCM;
 	format.nChannels = 1;
 	format.wBitsPerSample = 16;
-	format.nSamplesPerSec = 8000;
+	format.nSamplesPerSec = 44100;
 	format.nBlockAlign = format.wBitsPerSample * format.nChannels / 8;
 	format.nAvgBytesPerSec = format.nBlockAlign * format.nSamplesPerSec;
 	provider->set_output_type(&format);
@@ -52,22 +52,21 @@ STDMETHODIMP CMFIOProvider::LoadFile(LPCWSTR fileName, DWORD* bufferSize)
 		{
 		}
 	}).get();
-	*bufferSize = buffer.tell_not_get();
+
+	samples_count = this->buffer.tell_not_get() / sizeof(short);
+	samples = std::make_unique<short[]>(samples_count);
+	this->buffer.read((byte*)samples.get(), this->buffer.tell_not_get());
+
+	CreateSpectrogram(spectr);
+	spectr->set_input(samples.get(), samples_count);
+	*bufferSize = samples_count * sizeof(short);
 	return S_OK;
 }
 
 
 STDMETHODIMP CMFIOProvider::ReadAllSamples(SAFEARRAY* buffer)
 {
-	if (!samples)
-	{
-		auto samples_count = this->buffer.tell_not_get() / sizeof(short);
-		samples = std::make_unique<short[]>(samples_count);
-		this->buffer.read((byte*)samples.get(), this->buffer.tell_not_get());
-		CreateSpectrogram(spectr);
-		spectr->set_input(samples.get(), samples_count);
-	}
-	memcpy_s((BYTE*)buffer->pvData, buffer->rgsabound[0].cElements, samples.get(), this->buffer.count());
+	memcpy_s((BYTE*)buffer->pvData, buffer->rgsabound[0].cElements, samples.get(), samples_count * sizeof(short));
 
 	return S_OK;
 }
@@ -77,7 +76,8 @@ STDMETHODIMP CMFIOProvider::PrepareSpectrogram(DWORD* width, DWORD* height)
 {
 	if (specData.empty())
 	{
-		specData = spectr->draw(img_Width, img_Height);
+		spectr->draw();
+		specData = spectr->get_output(img_Width, img_Height);
 	}
 	*width = img_Width;
 	*height = img_Height;
@@ -86,7 +86,7 @@ STDMETHODIMP CMFIOProvider::PrepareSpectrogram(DWORD* width, DWORD* height)
 
 STDMETHODIMP CMFIOProvider::DrawSpectrogram(SAFEARRAY * buffer)
 {
-	memcpy_s((FLOAT*)buffer->pvData, buffer->rgsabound[0].cElements * sizeof(float),
-		specData.data(), specData.size() * sizeof(float));
+	memcpy_s((FLOAT*)buffer->pvData, buffer->rgsabound[0].cElements * sizeof(uint32_t),
+		specData.data(), specData.size() * sizeof(uint32_t));
 	return S_OK;
 }

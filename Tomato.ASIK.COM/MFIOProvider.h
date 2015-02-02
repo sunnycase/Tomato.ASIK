@@ -69,8 +69,9 @@ private:
 	Tomato::block_buffer<byte> buffer;
 	std::unique_ptr<short[]> samples;
 	std::unique_ptr<Tomato::ASIK::Core::spectrogram> spectr;
-	std::vector<float> specData;
+	std::vector<uint32_t> specData;
 	size_t img_Width, img_Height;
+	size_t samples_count;
 public:
 	STDMETHOD(PrepareSpectrogram)(DWORD* width, DWORD* height);
 STDMETHOD(DrawSpectrogram)(SAFEARRAY * buffer);

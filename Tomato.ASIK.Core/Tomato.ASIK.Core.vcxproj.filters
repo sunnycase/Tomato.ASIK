@@ -57,6 +57,9 @@
     <ClInclude Include="spectrogram_impl.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="ck_distance.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -74,5 +77,21 @@
     <ClCompile Include="spectrogram.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="ck_distance.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="DefaultPixelShader.hlsl">
+      <Filter>源文件</Filter>
+    </FxCompile>
+    <FxCompile Include="DefaultVertexShader.hlsl">
+      <Filter>源文件</Filter>
+    </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="DefaultShader.hlsli">
+      <Filter>源文件</Filter>
+    </None>
   </ItemGroup>
 </Project>

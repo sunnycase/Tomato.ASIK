@@ -23,8 +23,8 @@ namespace Tomato.ASIK.IDE
     /// </summary>
     public partial class MainWindow : Common.Window
     {
-        MFIOProvider provider = new MFIOProvider();
-        
+        MFIOProvider provider = null;
+
 
         public MainWindow()
         {
@@ -40,11 +40,12 @@ namespace Tomato.ASIK.IDE
 
         private void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
-            provider.Initialize();
         }
 
         async void ShowData(string fileName)
         {
+            provider = new MFIOProvider();
+            provider.Initialize();
             var data = await LoadData(fileName);
             ViewBag.MaxXValue = data.Length;
             var points = new PointsCollection();
@@ -65,7 +66,7 @@ namespace Tomato.ASIK.IDE
             });
             var buffer = new byte[bufferSize];
             provider.ReadAllSamples(buffer);
-            
+
             var waveData = new short[bufferSize / 2];
             Buffer.BlockCopy(buffer, 0, waveData, 0, (int)bufferSize);
             return waveData;
@@ -77,7 +78,7 @@ namespace Tomato.ASIK.IDE
             {
                 Filter = "音频文件|*.wav;*.mp3;*.wma"
             };
-            if(dlg.ShowDialog() == true)
+            if (dlg.ShowDialog() == true)
             {
                 ViewBag.Path = dlg.FileName;
                 ShowData(dlg.FileName);
@@ -88,19 +89,11 @@ namespace Tomato.ASIK.IDE
         {
             uint width, height;
             provider.PrepareSpectrogram(out width, out height);
-            var specData = new float[width * height];
+            var specData = new uint[width * height];
             provider.DrawSpectrogram(specData);
-            var imgData = new byte[width * height];
-            for (int x = 0; x < width; x++)
-            {
-                for (int y = 0; y < height; y++)
-                {
-                    imgData[x * height + y] = (byte)(255.0f * specData[x * height + height - y - 1]);
-                }
-            }
+            var img = BitmapSource.Create((int)width, (int)height, 96.0, 96.0, PixelFormats.Bgr32,
+                null, specData, (int)width * 4);
 
-            var img = BitmapSource.Create((int)width, (int)height, 96.0, 96.0, PixelFormats.Indexed8,
-                BitmapPalettes.Gray256, imgData, (int)width);
             return img;
         }
     }
