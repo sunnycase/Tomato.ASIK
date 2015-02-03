@@ -57,7 +57,10 @@
     <ClInclude Include="spectrogram_impl.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="ck_distance.h">
+    <ClInclude Include="ck_distance_impl.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\core\ck_distance.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

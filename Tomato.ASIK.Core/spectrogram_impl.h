@@ -23,8 +23,11 @@ public:
 	virtual void ASIKCALL set_step_size(size_t value);
 	virtual void ASIKCALL draw();
 	virtual std::vector<uint32_t> ASIKCALL get_output(size_t& width, size_t& height);
+
+	concurrency::graphics::texture_view<concurrency::graphics::uint_4, 2> get_section() const;
 private:
 	void sample_fft_input(size_t step);
+	void produce_spec_texture(concurrency::array_view<float, 2> tmp_output);
 private:
 	size_t fft_size;
 	size_t step_size;

@@ -18,7 +18,7 @@ concurrency::task<void> read_sample(io_provider* provider, block_buffer<byte>& b
 	});
 }
 
-std::vector<uint32_t> produce_spectrogram(const WAVEFORMATEX* format, const std::wstring& fileName)
+std::unique_ptr<spectrogram> produce_spectrogram(const WAVEFORMATEX* format, const std::wstring& fileName)
 {
 	std::unique_ptr<io_provider> provider;
 	CreateMFIOProvider(provider);
@@ -53,7 +53,7 @@ std::vector<uint32_t> produce_spectrogram(const WAVEFORMATEX* format, const std:
 	auto relFileName = fileName.substr(fileName.find_last_of(L'\\') + 1);
 	std::wcout << relFileName << L'(' << width << L'x' << height << L") Used: "
 		<< float(time2 - time1) / CLOCKS_PER_SEC << L"sec." << std::endl;
-	return image_data;
+	return std::move(spectrogram);
 }
 
 int _tmain(int argc, _TCHAR* argv[])
@@ -64,17 +64,31 @@ int _tmain(int argc, _TCHAR* argv[])
 	format.wFormatTag = WAVE_FORMAT_PCM;
 	format.nChannels = 1;
 	format.wBitsPerSample = 16;
-	format.nSamplesPerSec = 44100;
+	format.nSamplesPerSec = 16000;
 	format.nBlockAlign = format.wBitsPerSample * format.nChannels / 8;
 	format.nAvgBytesPerSec = format.nBlockAlign * format.nSamplesPerSec;
 
-	for (size_t i = 1; i <= 500; i++)
+	std::vector<std::unique_ptr<spectrogram>> specs;
+	for (size_t i = 1; i <= 10; i++)
 	{
 		std::wstringstream ss;
 		ss << LR"(D:\Work\Projects\Science\Tomato.ASIK\references\UCR_Contest\Train\)";
 		ss << std::setfill(L'0') << std::setw(4) << i << L".wav";
 
-		produce_spectrogram(&format, ss.str());
+		specs.emplace_back(produce_spectrogram(&format, ss.str()));
+	}
+
+	std::unique_ptr<ck_distance> ck;
+	CreateCKDistance(ck, 96, 256);
+	for (size_t x = 0; x < 10; x++)
+	{
+		for (size_t y = 0; y < 10; y++)
+		{
+			std::wcout << std::setfill(L'0') << std::setw(4) << x + 1 << L".wav VS " <<
+				std::setfill(L'0') << std::setw(4) << y + 1 << L".wav CK Distance: ";
+			auto dist = ck->compute(specs[x].get(), specs[y].get());
+			std::wcout << dist << std::endl;
+		}
 	}
 
 	system("pause");

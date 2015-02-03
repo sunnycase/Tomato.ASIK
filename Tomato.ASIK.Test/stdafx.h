@@ -19,3 +19,4 @@
 #include "../include/core/io/io.h"
 #include "../include/block_buffer.hpp"
 #include "../include/core/spectrogram.h"
+#include "../include/core/ck_distance.h"

@@ -25,9 +25,8 @@
 #include <Strmif.h>
 #include <Codecapi.h>
 #include <atlcomcli.h>
+#include <amp_graphics.h>
 
 #include "../include/win32_exception.h"
 #include "../include/mfhelpers.hpp"
 #include "../vendors/ampfft/inc/amp_fft.h"
-
-#include <amp_graphics.h>

@@ -151,12 +151,13 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\block_buffer.hpp" />
+    <ClInclude Include="..\include\core\ck_distance.h" />
     <ClInclude Include="..\include\core\io\io.h" />
     <ClInclude Include="..\include\core\spectrogram.h" />
     <ClInclude Include="..\include\mfhelpers.hpp" />
     <ClInclude Include="..\include\platform.h" />
     <ClInclude Include="..\include\win32_exception.h" />
-    <ClInclude Include="ck_distance.h" />
+    <ClInclude Include="ck_distance_impl.h" />
     <ClInclude Include="io\mf_io_provider.h" />
     <ClInclude Include="io\mf_source_reader_handler.h" />
     <ClInclude Include="spectrogram_impl.h" />

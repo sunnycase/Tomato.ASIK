@@ -37,7 +37,7 @@ STDMETHODIMP CMFIOProvider::LoadFile(LPCWSTR fileName, DWORD* bufferSize)
 	format.wFormatTag = WAVE_FORMAT_PCM;
 	format.nChannels = 1;
 	format.wBitsPerSample = 16;
-	format.nSamplesPerSec = 44100;
+	format.nSamplesPerSec = 16000;
 	format.nBlockAlign = format.wBitsPerSample * format.nChannels / 8;
 	format.nAvgBytesPerSec = format.nBlockAlign * format.nSamplesPerSec;
 	provider->set_output_type(&format);

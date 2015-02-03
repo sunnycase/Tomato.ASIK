@@ -5,6 +5,7 @@
 //
 // Copyright (c) Microsoft Corporation. All rights reserved.
 //--------------------------------------------------------------------------------------
+#pragma once
 
 #include <d3d11.h>
 #include <complex>
@@ -221,10 +222,10 @@ private:
         HRESULT hr = S_OK;
 
         Microsoft::WRL::ComPtr<ID3D11Buffer> pBufferIn;
-        direct3d::get_buffer(_Input)->QueryInterface(__uuidof(ID3D11Buffer), reinterpret_cast<void**>(pBufferIn.GetAddressOf()));
+        concurrency::direct3d::get_buffer(_Input)->QueryInterface(__uuidof(ID3D11Buffer), reinterpret_cast<void**>(pBufferIn.GetAddressOf()));
         
         Microsoft::WRL::ComPtr<ID3D11Buffer> pBufferOut;
-        direct3d::get_buffer(_Output)->QueryInterface(__uuidof(ID3D11Buffer), reinterpret_cast<void**>(pBufferOut.GetAddressOf()));
+		concurrency::direct3d::get_buffer(_Output)->QueryInterface(__uuidof(ID3D11Buffer), reinterpret_cast<void**>(pBufferOut.GetAddressOf()));
         
         hr = base_transform(_Forward, pBufferIn.Get(), pBufferOut.Get());
 
