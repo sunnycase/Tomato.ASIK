@@ -19,9 +19,12 @@
     <Filter Include="源文件\io">
       <UniqueIdentifier>{15505b22-91e7-4329-ae89-dcfd2b8e6c6a}</UniqueIdentifier>
     </Filter>
-  </ItemGroup>
-  <ItemGroup>
-    <Text Include="ReadMe.txt" />
+    <Filter Include="头文件\classifier">
+      <UniqueIdentifier>{96e3f436-0c3c-436a-b593-c2edad942abe}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\classifier">
+      <UniqueIdentifier>{e3f9e7c1-a148-4979-b6d0-8c434b9a8a8c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -57,10 +60,25 @@
     <ClInclude Include="spectrogram_impl.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="ck_distance_impl.h">
+    <ClInclude Include="classifier\classifier_impl.h">
+      <Filter>头文件\classifier</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\core\classifier\classifier.h">
+      <Filter>头文件\classifier</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\core\sample.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\core\ck_distance.h">
+    <ClInclude Include="sample_impl.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="ck_distance_service_impl.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\core\ck_distance_service.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="ck_distance.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
@@ -83,18 +101,14 @@
     <ClCompile Include="ck_distance.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <FxCompile Include="DefaultPixelShader.hlsl">
+    <ClCompile Include="classifier\classifier.cpp">
+      <Filter>源文件\classifier</Filter>
+    </ClCompile>
+    <ClCompile Include="sample.cpp">
       <Filter>源文件</Filter>
-    </FxCompile>
-    <FxCompile Include="DefaultVertexShader.hlsl">
+    </ClCompile>
+    <ClCompile Include="ck_distance_service.cpp">
       <Filter>源文件</Filter>
-    </FxCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="DefaultShader.hlsli">
-      <Filter>源文件</Filter>
-    </None>
+    </ClCompile>
   </ItemGroup>
 </Project>

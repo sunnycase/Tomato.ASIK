@@ -46,12 +46,14 @@ std::unique_ptr<spectrogram> produce_spectrogram(const WAVEFORMATEX* format, con
 	CreateSpectrogram(spectrogram);
 	spectrogram->set_input(samples.get(), samples_count);
 	spectrogram->draw();
-	size_t width, height;
-	auto image_data = spectrogram->get_output(width, height);
+
+	auto sample = spectrogram->get_sample();
+	auto image_data = sample->data;
+	
 	auto time2 = clock();
 
 	auto relFileName = fileName.substr(fileName.find_last_of(L'\\') + 1);
-	std::wcout << relFileName << L'(' << width << L'x' << height << L") Used: "
+	std::wcout << relFileName << L'(' << sample->width << L'x' << sample->height << L") Used: "
 		<< float(time2 - time1) / CLOCKS_PER_SEC << L"sec." << std::endl;
 	return std::move(spectrogram);
 }
@@ -78,15 +80,17 @@ int _tmain(int argc, _TCHAR* argv[])
 		specs.emplace_back(produce_spectrogram(&format, ss.str()));
 	}
 
-	std::unique_ptr<ck_distance> ck;
-	CreateCKDistance(ck, 96, 256);
+	std::unique_ptr<ck_distance_service> ck;
+	CreateCKDistanceService(256, ck);
 	for (size_t x = 0; x < 10; x++)
 	{
 		for (size_t y = 0; y < 10; y++)
 		{
 			std::wcout << std::setfill(L'0') << std::setw(4) << x + 1 << L".wav VS " <<
 				std::setfill(L'0') << std::setw(4) << y + 1 << L".wav CK Distance: ";
-			auto dist = ck->compute(specs[x].get(), specs[y].get());
+			auto sampleX = specs[x]->get_sample(1, 1);
+			auto sampleY = specs[y]->get_sample(1, 1);
+			auto dist = ck->compute(sampleX.get(), sampleY.get());
 			std::wcout << dist << std::endl;
 		}
 	}

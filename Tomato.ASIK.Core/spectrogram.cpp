@@ -8,7 +8,7 @@
 #include "spectrogram_impl.h"
 #include <amp_math.h>
 #include <comdef.h>
-#include "ck_distance_impl.h"
+#include "sample_impl.h"
 
 #ifdef NDEBUG
 #ifdef _X86_
@@ -27,7 +27,6 @@
 using namespace NS_ASIK_CORE;
 using namespace wrl;
 using namespace concurrency;
-using namespace concurrency::graphics;
 namespace ampmath = concurrency::fast_math;
 
 #define EPSILON 1.0e-6f
@@ -54,7 +53,7 @@ void ASIKCALL spectrogram_impl::set_input(const short* input, size_t input_len)
 	height = fft_size / 2;
 	auto newWidth = width - width % 16;
 	if (newWidth < width) newWidth += 16;
-	output_buffer = std::make_unique<graphics::texture<graphics::uint_4, 2>>((int)height, (int)newWidth, 8U);
+	output_buffer = std::make_unique<array<uint32_t, 2>>((int)height, (int)newWidth);
 }
 
 size_t ASIKCALL spectrogram_impl::get_fft_size() const noexcept
@@ -102,7 +101,7 @@ void ASIKCALL spectrogram_impl::draw()
 		{
 			auto real = fft_output_view[idx]._Val[_RE] * scale;
 			auto img = fft_output_view[idx]._Val[_IM] * scale;
-			auto amptitude = ampmath::sqrt(real * real + img * img) * 0.05f;
+			auto amptitude = ampmath::sqrt(real * real + img * img);
 
 			auto dB = 10.0f * ampmath::log10(amptitude + EPSILON) / -60.0f;
 			output_view[idx] = 1.0f - ampmath::fmin(1.0f, ampmath::fmax(0.0f, dB));
@@ -112,21 +111,25 @@ void ASIKCALL spectrogram_impl::draw()
 	produce_spec_texture(tmp_output);
 }
 
-std::vector<uint32_t> ASIKCALL spectrogram_impl::get_output(size_t& width, size_t& height)
+size_t ASIKCALL spectrogram_impl::get_length()
 {
-	width = output_buffer->extent[1];
-	height = output_buffer->extent[0];
-
-	std::vector<uint32_t> data;
-	data.resize(output_buffer->data_length / 4);
-	concurrency::graphics::copy(*output_buffer, data.data(), output_buffer->data_length);
-
-	return std::move(data);
+	ensure_spectorgram_created();
+	return output_buffer->extent[1];
 }
 
-texture_view<uint_4, 2> spectrogram_impl::get_section() const
+std::unique_ptr<sample> ASIKCALL spectrogram_impl::get_sample(size_t startIndex, size_t length)
 {
-	return texture_view<uint_4, 2>(*output_buffer);
+	if (startIndex + length > get_length())
+		throw std::out_of_range("startIndex or length is out of range.");
+
+	ensure_spectorgram_created();
+	return std::make_unique<sample_impl>(output_buffer->section(
+		index<2>(0, startIndex), extent<2>(step_size, length)));
+}
+
+array_view<uint32_t, 2> spectrogram_impl::get_section() const
+{
+	return array_view<uint32_t, 2>(*output_buffer);
 }
 
 void spectrogram_impl::sample_fft_input(size_t step)
@@ -144,23 +147,23 @@ void spectrogram_impl::sample_fft_input(size_t step)
 	});
 }
 
-uint abs(int value) restrict(amp)
-{
-	if (value < 0) return -value;
-	return value;
-}
-
 void spectrogram_impl::produce_spec_texture(array_view<float, 2> tmp_output)
 {
 	int spec_height = height;
-	graphics::texture_view<graphics::uint_4, 2> output_view(*output_buffer);
+	array_view<uint32_t, 2> output_view(*output_buffer);
 	parallel_for_each(tmp_output.extent, [tmp_output, output_view, spec_height](index<2> idx) restrict(amp)
 	{
-		uint_4 color;
-		uint grey = tmp_output(idx) * 255;
-		color = uint_4(grey, grey, grey, 255);
-		output_view.set(index<2>(spec_height - idx[1] - 1, idx[0]), color);
+		uint32_t color;
+		uint32_t grey = tmp_output(idx) * 255;
+		color = grey | (grey << 8) | (grey << 16) | (0xFF << 24);
+		output_view(spec_height - idx[1] - 1, idx[0]) = color;
 	});
+}
+
+void spectrogram_impl::ensure_spectorgram_created()
+{
+	if (!output_buffer)
+		draw();
 }
 
 void ASIKCALL CreateSpectrogram(std::unique_ptr<NS_ASIK_CORE::spectrogram>& spec)

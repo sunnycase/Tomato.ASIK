@@ -6,7 +6,6 @@
 // 创建日期: 2015-01-28
 #pragma once
 #include "../include/core/spectrogram.h"
-#include <amp_graphics.h>
 
 NSDEF_ASIK_CORE
 
@@ -22,19 +21,21 @@ public:
 	virtual size_t ASIKCALL get_step_size() const noexcept;
 	virtual void ASIKCALL set_step_size(size_t value);
 	virtual void ASIKCALL draw();
-	virtual std::vector<uint32_t> ASIKCALL get_output(size_t& width, size_t& height);
+	virtual size_t ASIKCALL get_length();
+	virtual std::unique_ptr<sample> ASIKCALL get_sample(size_t startIndex, size_t length);
 
-	concurrency::graphics::texture_view<concurrency::graphics::uint_4, 2> get_section() const;
+	concurrency::array_view<uint32_t, 2> get_section() const;
 private:
 	void sample_fft_input(size_t step);
 	void produce_spec_texture(concurrency::array_view<float, 2> tmp_output);
+	void ensure_spectorgram_created();
 private:
 	size_t fft_size;
 	size_t step_size;
 	size_t width;
 	size_t height;
 	std::unique_ptr<concurrency::array<float, 1>> input_buffer;
-	std::unique_ptr<concurrency::graphics::texture<concurrency::graphics::uint_4, 2>> output_buffer;
+	std::unique_ptr<concurrency::array<uint32_t, 2>> output_buffer;
 	concurrency::extent<1> fft_buffer_ext;
 	concurrency::array<float, 1> fft_input_buffer;
 	concurrency::array<std::complex<float>, 1> fft_output_buffer;

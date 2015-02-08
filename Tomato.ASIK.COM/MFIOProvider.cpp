@@ -77,7 +77,10 @@ STDMETHODIMP CMFIOProvider::PrepareSpectrogram(DWORD* width, DWORD* height)
 	if (specData.empty())
 	{
 		spectr->draw();
-		specData = spectr->get_output(img_Width, img_Height);
+		auto sample = spectr->get_sample();
+		specData = sample->data;
+		img_Width = sample->width;
+		img_Height = sample->height;
 	}
 	*width = img_Width;
 	*height = img_Height;

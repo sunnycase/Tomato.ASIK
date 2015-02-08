@@ -13,7 +13,7 @@ NSDEF_ASIK_CORE
 class ck_distance
 {
 public:
-	virtual float compute(spectrogram* specA, spectrogram* specB) = 0;
+	virtual float ASIKCALL compute(sample* sampleA, sample* sampleB) = 0;
 };
 
 NSED_ASIK_CORE
