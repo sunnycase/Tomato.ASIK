@@ -1,9 +1,9 @@
-//
+ï»¿//
 // Tomato ASIK
-// CK Distance ·şÎñ
+// CK Distance æœåŠ¡
 //
 // (c) 2014 SunnyCase
-// ´´½¨ÈÕÆÚ: 2015-02-08
+// åˆ›å»ºæ—¥æœŸ: 2015-02-08
 #include "stdafx.h"
 #include "ck_distance_service_impl.h"
 
@@ -14,7 +14,7 @@ using namespace concurrency;
 ck_distance_service_impl::ck_distance_service_impl(size_t height)
 	:height(height)
 {
-	// 16 µÄ±¶Êı£¬ÇÒ´óÓÚ 128
+	// 16 çš„å€æ•°ï¼Œä¸”å¤§äº 128
 	if (height < 128 || height % 16 != 0)
 		throw std::exception("height is not compatible with H.264.");
 }
@@ -24,7 +24,7 @@ size_t ck_distance_service_impl::make_width_compatible(size_t width) noexcept
 	if (width <= 96)
 		return 96;
 
-	// 16 µÄ±¶Êı
+	// 16 çš„å€æ•°
 	auto newWidth = width - width % 16;
 	if (newWidth < width)
 		newWidth += 16;

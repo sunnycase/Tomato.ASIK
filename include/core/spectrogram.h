@@ -1,16 +1,16 @@
-//
+ï»¿//
 // Tomato ASIK
-// ÆµÆ×·ÖÎö
+// é¢‘è°±åˆ†æ
 //
 // (c) 2014 SunnyCase
-// ´´½¨ÈÕÆÚ: 2015-01-28
+// åˆ›å»ºæ—¥æœŸ: 2015-01-28
 #pragma once
 #include "../platform.h"
 #include "sample.h"
 
 NSDEF_ASIK_CORE
 
-// ÆµÆ×·ÖÎö
+// é¢‘è°±åˆ†æ
 class spectrogram
 {
 public:
@@ -20,12 +20,14 @@ public:
 	virtual size_t ASIKCALL get_step_size() const noexcept = 0;
 	virtual void ASIKCALL set_step_size(size_t value) = 0;
 	virtual void ASIKCALL draw() = 0;
+
+	__declspec(property(get = get_length)) size_t length;
 	virtual size_t ASIKCALL get_length() = 0;
 	virtual std::unique_ptr<sample> ASIKCALL get_sample(size_t startIndex, size_t length) = 0;
 
 	std::unique_ptr<sample> get_sample()
 	{
-		return get_sample(0, get_length());
+		return get_sample(0, length);
 	}
 };
 

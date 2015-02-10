@@ -12,6 +12,7 @@
 // Windows м╥нд╪Ч: 
 #include <windows.h>
 #include <mmreg.h>
+#include <ppl.h>
 #include <ppltasks.h>
 #include <functional>
 
@@ -29,3 +30,4 @@
 #include "../include/win32_exception.h"
 #include "../include/mfhelpers.hpp"
 #include "../vendors/ampfft/inc/amp_fft.h"
+#include "../vendors/boolinq/boolinq.h"
