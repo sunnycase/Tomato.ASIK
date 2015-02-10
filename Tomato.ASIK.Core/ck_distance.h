@@ -23,29 +23,22 @@ private:
 	static void initialize_mf();
 	static void uninitialize_mf() noexcept;
 private:
-	void set_outputType();
-	void set_h264InputType();
-	void configure_encoder();
-	void create_mf_h264_encoder_activator();
-	void create_mf_h264_encoder();
+	void create_mpeg_encoder();
 
-	void create_mf_rgb32toIUV_converter();
-	void configure_rgb32toIUV_converter();
-	void create_mf_rgb32toIUV_activator();
+	void create_mf_rgb32toi420_converter();
+	void configure_rgb32toi420_converter();
 
-	wrl::ComPtr<IMFSample> convert_rgb32_to_IYUV_sample(const concurrency::array_view<uint32_t, 2>& src);
-	DWORD get_h264_sample_length(wrl::ComPtr<IMFSample> src1, wrl::ComPtr<IMFSample> src2);
-	wrl::ComPtr<IMFSample> encode_h264_sample(wrl::ComPtr<IMFSample> src);
+	wrl::ComPtr<IMFSample> convert_rgb32_to_i420_sample(const concurrency::array_view<uint32_t, 2>& src);
+	size_t get_mpeg_sample_length(wrl::ComPtr<IMFSample> src1, wrl::ComPtr<IMFSample> src2);
+	size_t get_mpeg_sample_length(wrl::ComPtr<IMFSample> src, int64_t pts, size_t& skipped);
+	void reset_mpeg_encoder();
 private:
-	wrl::ComPtr<IMFActivate> h264EncoderActivator;
-	wrl::ComPtr<IMFActivate> rgb32toIYUVActivator;
-	wrl::ComPtr<IMFTransform> h264Encoder;
-	wrl::ComPtr<ICodecAPI> h264Codec;
-	wrl::ComPtr<IMFTransform> rgb32toIYUVConverter;
+	wrl::ComPtr<IMFTransform> rgb32toi420Converter;
+	AVCodec* mpegEncoder;
+	AVCodecContext* outputContext;
 private:
-	wrl::ComPtr<IMFMediaType> inputType;
-	wrl::ComPtr<IMFMediaType> h264InputType;
-	wrl::ComPtr<IMFMediaType> outputType;
+	wrl::ComPtr<IMFMediaType> rgbType;
+	wrl::ComPtr<IMFMediaType> yuvType;
 	size_t width, height;
 };
 

@@ -15,6 +15,7 @@
 #include <ppl.h>
 #include <ppltasks.h>
 #include <functional>
+#include <iostream>
 
 
 // TODO:  在此处引用程序需要的其他头文件
@@ -30,4 +31,14 @@
 #include "../include/win32_exception.h"
 #include "../include/mfhelpers.hpp"
 #include "../vendors/ampfft/inc/amp_fft.h"
-#include "../vendors/boolinq/boolinq.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#include <libavutil/opt.h>
+#include <libavcodec/avcodec.h>
+
+#ifdef __cplusplus
+}
+#endif

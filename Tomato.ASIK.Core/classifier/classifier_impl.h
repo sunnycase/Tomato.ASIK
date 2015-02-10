@@ -11,8 +11,6 @@
 
 NSDEF_ASIK_CORE_CLASSIFIER
 
-typedef uint32_t class_id_t;
-
 struct fingerprint
 {
 	std::shared_ptr<sample> sample;
@@ -21,12 +19,6 @@ struct fingerprint
 
 class classifier_impl : public classifier
 {
-	struct spectrogram_pair
-	{
-		class_id_t class_id;
-		spectrogram_impl* spec;
-	};
-
 	struct fingerprint_value
 	{
 		float entropy;
@@ -45,8 +37,6 @@ class classifier_impl : public classifier
 	};
 
 	typedef std::unordered_multimap<class_id_t, std::unique_ptr<spectrogram_impl>> spectrograms_t;
-	typedef boolinq::Enumerator<spectrogram_pair, spectrograms_t::iterator> spectrogram_enumerator_t;
-	typedef boolinq::LinqObj<spectrogram_enumerator_t> spectrogram_linq_t;
 public:
 	///<summary>创建分类器的新实例</summary>
 	///<param name="min_length">指纹的最小长度</param>
@@ -58,11 +48,9 @@ public:
 	virtual void ASIKCALL compute_fingerprint();
 private:
 	std::vector<fingerprint> compute_fingerprint(class_id_t class_id);
-	void compute_fingerprint(std::vector<fingerprint>& prints, const std::vector<spectrogram_pair>& targets, const std::vector<spectrogram_pair>& compares, size_t finger_length);
-	spectrogram_linq_t from_spectrograms();
-	spectrogram_linq_t from_spectrograms(class_id_t class_id);
-	fingerprint_value evaluate_fingerprint(sample* target, const std::vector<spectrogram_pair>& targets, const std::vector<spectrogram_pair>& compares);
-	float compute_distance(sample* target, const spectrogram_pair& compare);
+	void compute_fingerprint(std::vector<fingerprint>& prints, const std::vector<spectrogram_impl*>& targets, const std::vector<spectrogram_impl*>& compares, size_t finger_length);
+	fingerprint_value evaluate_fingerprint(sample* target, const std::vector<spectrogram_impl*>& targets, const std::vector<spectrogram_impl*>& compares);
+	float compute_distance(sample* target, spectrogram_impl* compare);
 
 	static float compute_entropy(size_t x_count, size_t y_count, size_t total_count);
 private:

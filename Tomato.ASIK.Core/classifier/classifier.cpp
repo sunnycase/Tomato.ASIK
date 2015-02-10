@@ -13,7 +13,8 @@ using namespace NS_ASIK_CORE_CLASSIFIER;
 using namespace wrl;
 using namespace concurrency;
 using namespace concurrency::graphics;
-using namespace boolinq;
+
+#define PRINT_LOG 1
 
 classifier_impl::classifier_impl(size_t min_length, size_t max_length)
 	:min_length(min_length), max_length(max_length), max_spectrogram_length(0)
@@ -45,14 +46,19 @@ void ASIKCALL classifier_impl::compute_fingerprint()
 
 std::vector<fingerprint> classifier_impl::compute_fingerprint(class_id_t class_id)
 {
-#if _DEBUG
+#if PRINT_LOG
 	std::cout << "Computing Class " << class_id << "..." << std::endl;
 #endif
-	auto targets = from_spectrograms(class_id).toVector();
-	auto compares = from_spectrograms().where([=](const spectrogram_pair& spec)
+	std::vector<spectrogram_impl*> targets, compares;
+	targets.reserve(spectrograms.size());
+	compares.reserve(spectrograms.size());
+	for (const auto& pair : spectrograms)
 	{
-		return spec.class_id != class_id;
-	}).toVector();
+		if (pair.first == class_id)
+			targets.emplace_back(pair.second.get());
+		else
+			compares.emplace_back(pair.second.get());
+	}
 
 	std::vector<fingerprint> prints;
 	auto max_length = std::min(this->max_length, max_spectrogram_length);
@@ -60,7 +66,7 @@ std::vector<fingerprint> classifier_impl::compute_fingerprint(class_id_t class_i
 
 	for (size_t len = min_length; len <= max_length; len++)
 	{
-#if _DEBUG
+#if PRINT_LOG
 		std::cout << "-- Fingerprint Length: " << len << std::endl;
 #endif
 		compute_fingerprint(prints, targets, compares, len);
@@ -70,20 +76,19 @@ std::vector<fingerprint> classifier_impl::compute_fingerprint(class_id_t class_i
 }
 
 void classifier_impl::compute_fingerprint(std::vector<fingerprint>& prints,
-	const std::vector<spectrogram_pair>& targets, const std::vector<spectrogram_pair>& compares, size_t finger_length)
+	const std::vector<spectrogram_impl*>& targets, const std::vector<spectrogram_impl*>& compares, size_t finger_length)
 {
-	for (const auto& target : targets)
+	for (auto target : targets)
 	{
 		size_t bestIndex = 0;
 		auto bestValue = fingerprint_value::bad();
 		std::shared_ptr<sample> bestSample;
 
-		auto target_spec = target.spec;
-		auto endIndex = target_spec->length - finger_length;
-		assert(target_spec->length >= finger_length);
+		auto endIndex = target->length - finger_length;
+		assert(target->length >= finger_length);
 		for (size_t startIndex = 0; startIndex <= endIndex; startIndex++)
 		{
-			auto target_sample = target_spec->get_sample(startIndex, finger_length);
+			auto target_sample = target->get_sample(startIndex, finger_length);
 			auto value = evaluate_fingerprint(target_sample.get(), targets, compares);
 			if (value > bestValue)
 			{
@@ -92,32 +97,15 @@ void classifier_impl::compute_fingerprint(std::vector<fingerprint>& prints,
 				bestSample = std::move(target_sample);
 			}
 		}
+#if PRINT_LOG
+		std::cout << "-- Best fingerprint: Entropy " << bestValue.entropy
+			<< ", Threhold " << bestValue.threhold << ", Margin " << bestValue.margin << std::endl;
+#endif
 		prints.emplace_back(fingerprint{ std::move(bestSample), bestValue.threhold });
 	}
 }
 
-classifier_impl::spectrogram_linq_t classifier_impl::from_spectrograms()
-{
-	auto end = spectrograms.end();
-	return spectrogram_enumerator_t([end](classifier_impl::spectrograms_t::iterator& iter)
-	{
-		return (iter == end) ? throw EnumeratorEndException() :
-			iter++, spectrogram_pair{ iter->first, iter->second.get() };
-	}, spectrograms.begin());
-}
-
-classifier_impl::spectrogram_linq_t classifier_impl::from_spectrograms(class_id_t class_id)
-{
-	auto range = spectrograms.equal_range(class_id);
-	auto end = range.second;
-	return spectrogram_enumerator_t([end](classifier_impl::spectrograms_t::iterator& iter)
-	{
-		return (iter == end) ? throw EnumeratorEndException() :
-			iter++, spectrogram_pair{ iter->first, iter->second.get() };
-	}, range.first);
-}
-
-classifier_impl::fingerprint_value classifier_impl::evaluate_fingerprint(sample * target, const std::vector<spectrogram_pair>& targets, const std::vector<spectrogram_pair>& compares)
+classifier_impl::fingerprint_value classifier_impl::evaluate_fingerprint(sample * target, const std::vector<spectrogram_impl*>& targets, const std::vector<spectrogram_impl*>& compares)
 {
 	auto value = fingerprint_value::bad();
 
@@ -162,15 +150,14 @@ classifier_impl::fingerprint_value classifier_impl::evaluate_fingerprint(sample 
 	return value;
 }
 
-float classifier_impl::compute_distance(sample * target, const spectrogram_pair & compare)
+float classifier_impl::compute_distance(sample * target, spectrogram_impl* compare)
 {
 	float bestDistance = std::numeric_limits<float>::max();
 	auto finger_length = target->width;
-	auto compare_spec = compare.spec;
-	auto endIndex = compare_spec->length - finger_length;
+	auto endIndex = compare->length - finger_length;
 	for (size_t startIndex = 0; startIndex <= endIndex; startIndex++)
 	{
-		auto compare_sample = compare_spec->get_sample(startIndex, finger_length);
+		auto compare_sample = compare->get_sample(startIndex, finger_length);
 		auto distance = ck_service->compute(target, compare_sample.get());
 		if (distance < bestDistance)
 			bestDistance = distance;
@@ -184,5 +171,11 @@ float classifier_impl::compute_entropy(size_t x_count, size_t y_count, size_t to
 	float pX = float(x_count) / range_count;
 	float pY = float(y_count) / range_count;
 
-	return (-pX * std::log(pX) - pY * std::log(pY)) * (range_count / total_count);
+	return (-(pX == 0.f ? 0.f : pX * std::log(pX)) -
+		(pY == 0.f ? 0.f : pY * std::log(pY))) * (range_count / total_count);
+}
+
+void ASIKCALL CreateClassifier(size_t min_length, size_t max_length, std::unique_ptr<NS_ASIK_CORE_CLASSIFIER::classifier>& classi)
+{
+	classi = std::make_unique<classifier_impl>(min_length, max_length);
 }

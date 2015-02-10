@@ -6,6 +6,7 @@
 using namespace Tomato;
 using namespace Tomato::ASIK::Core;
 using namespace Tomato::ASIK::Core::IO;
+using namespace Tomato::ASIK::Core::Classifier;
 
 concurrency::task<void> read_sample(io_provider* provider, block_buffer<byte>& buffer)
 {
@@ -49,7 +50,7 @@ std::unique_ptr<spectrogram> produce_spectrogram(const WAVEFORMATEX* format, con
 
 	auto sample = spectrogram->get_sample();
 	auto image_data = sample->data;
-	
+
 	auto time2 = clock();
 
 	auto relFileName = fileName.substr(fileName.find_last_of(L'\\') + 1);
@@ -82,21 +83,33 @@ int _tmain(int argc, _TCHAR* argv[])
 
 	std::unique_ptr<ck_distance_service> ck;
 	CreateCKDistanceService(256, ck);
+#if 1
+	std::unique_ptr<classifier> clsifier;
+	CreateClassifier(6, 20, clsifier);
+	class_id_t ids[] = { 3, 4, 4, 5, 1, 5, 3, 1, 5, 2 };
+	for (size_t i = 0; i < ARRAYSIZE(ids); i++)
+	{
+		clsifier->add_input(ids[i], std::move(specs[i]));
+	}
+	clsifier->set_ck_distance_service(ck.get());
+	clsifier->compute_fingerprint();
+#else
+
 	for (size_t x = 0; x < 10; x++)
 	{
 		for (size_t y = 0; y < 10; y++)
 		{
 			std::wcout << std::setfill(L'0') << std::setw(4) << x + 1 << L".wav VS " <<
 				std::setfill(L'0') << std::setw(4) << y + 1 << L".wav CK Distance: ";
-			auto sampleX = specs[x]->get_sample(1, 1);
-			auto sampleY = specs[y]->get_sample(1, 1);
+			auto sampleX = specs[x]->get_sample(0, 64);
+			auto sampleY = specs[y]->get_sample(0, 64);
 			auto dist = ck->compute(sampleX.get(), sampleY.get());
 			std::wcout << dist << std::endl;
 		}
 	}
+#endif
 
 	system("pause");
-
 	return 0;
 }
 

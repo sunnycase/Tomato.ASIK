@@ -21,3 +21,4 @@
 #include "../include/core/spectrogram.h"
 #include "../include/core/ck_distance.h"
 #include "../include/core/ck_distance_service.h"
+#include "../include/core/classifier/classifier.h"

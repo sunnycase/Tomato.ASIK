@@ -50,3 +50,4 @@ namespace Tomato
 #define THROW_WSA_IFNOT(val) { if(!(val)) throw ::Tomato::win32_exception(WSAGetLastError()); }
 #define THROW_WIN_IFNOT(val) { if(!(val)) throw ::Tomato::win32_exception(GetLastError()); }
 #define THROW_IF_FAILED(hr) { if(FAILED(hr)) throw ::Tomato::win32_exception(hr); }
+#define THROW_IF_NOT(val, msg) {if(!(val)) throw std::exception(msg);}
