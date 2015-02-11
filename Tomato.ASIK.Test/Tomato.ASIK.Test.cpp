@@ -72,7 +72,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	format.nAvgBytesPerSec = format.nBlockAlign * format.nSamplesPerSec;
 
 	std::vector<std::unique_ptr<spectrogram>> specs;
-	for (size_t i = 1; i <= 10; i++)
+	for (size_t i = 1; i <= 20; i++)
 	{
 		std::wstringstream ss;
 		ss << LR"(D:\Work\Projects\Science\Tomato.ASIK\references\UCR_Contest\Train\)";
@@ -85,8 +85,9 @@ int _tmain(int argc, _TCHAR* argv[])
 	CreateCKDistanceService(256, ck);
 #if 1
 	std::unique_ptr<classifier> clsifier;
-	CreateClassifier(6, 20, clsifier);
-	class_id_t ids[] = { 3, 4, 4, 5, 1, 5, 3, 1, 5, 2 };
+	CreateClassifier(4, 20, clsifier);
+	class_id_t ids[] = { 3, 4, 4, 5, 1, 5, 3, 1, 5, 2,
+	5, 2, 3, 2, 4, 4, 2, 4, 2, 3};
 	for (size_t i = 0; i < ARRAYSIZE(ids); i++)
 	{
 		clsifier->add_input(ids[i], std::move(specs[i]));
@@ -101,8 +102,8 @@ int _tmain(int argc, _TCHAR* argv[])
 		{
 			std::wcout << std::setfill(L'0') << std::setw(4) << x + 1 << L".wav VS " <<
 				std::setfill(L'0') << std::setw(4) << y + 1 << L".wav CK Distance: ";
-			auto sampleX = specs[x]->get_sample(0, 64);
-			auto sampleY = specs[y]->get_sample(0, 64);
+			auto sampleX = specs[x]->get_sample(32, 6);
+			auto sampleY = specs[y]->get_sample(32, 6);
 			auto dist = ck->compute(sampleX.get(), sampleY.get());
 			std::wcout << dist << std::endl;
 		}

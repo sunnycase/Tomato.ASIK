@@ -34,7 +34,7 @@ public:
 private:
 	static size_t make_width_compatible(size_t width) noexcept;
 
-	std::unique_ptr<sample_impl> make_sample_compatible(sample_impl* sample);
+	concurrency::array_view<uint32_t, 2> make_sample_compatible(sample_impl* sample);
 	ck_distance* acquire_ck_distance_instance(size_t width);
 private:
 	const size_t height;

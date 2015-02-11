@@ -44,7 +44,8 @@ float ck_distance::compute(array_view<uint32_t, 2> x, array_view<uint32_t, 2> y)
 	auto xx = get_mpeg_sample_length(xYUV, xYUV);
 	auto yy = get_mpeg_sample_length(yYUV, yYUV);
 
-	return (float)(xy + yx) / (float)(xx + yy) - 1.f;
+	auto dist = (float)(xy + yx) / (float)(xx + yy) - 1.f;
+	return std::abs(dist);
 }
 
 void ck_distance::initialize_mf()
@@ -164,19 +165,20 @@ size_t ck_distance::get_mpeg_sample_length(wrl::ComPtr<IMFSample> src1, wrl::Com
 	totalSize += get_mpeg_sample_length(src1, 0, skipFrame);
 	totalSize += get_mpeg_sample_length(src2, 1, skipFrame);
 
-	AVPacket packet;
-	av_init_packet(&packet);
-	packet.data = nullptr;
-	packet.size = 0;
-
 	while (skipFrame)
 	{
+		AVPacket packet;
+		av_init_packet(&packet);
+		packet.data = nullptr;
+		packet.size = 0;
+
 		int got_packet = 0;
 		THROW_IF_NOT(avcodec_encode_video2(outputContext, &packet, nullptr, &got_packet) == 0,
 			"Encoding Error.");
 		if (got_packet)
 		{
 			totalSize += packet.size;
+			av_free_packet(&packet);
 			skipFrame--;
 		}
 	}
@@ -193,6 +195,9 @@ size_t ck_distance::get_mpeg_sample_length(wrl::ComPtr<IMFSample> src, int64_t p
 	BYTE* indata; DWORD maxLen, curLen;
 	mfbuffer_locker locker(inBuffer.Get());
 	THROW_IF_FAILED(locker.lock(&indata, &maxLen, &curLen));
+	inFrame.width = width;
+	inFrame.height = height;
+	inFrame.format = AV_PIX_FMT_YUV420P;
 	avpicture_fill((AVPicture*)&inFrame, indata, AVPixelFormat::AV_PIX_FMT_YUV420P, width, height);
 	inFrame.pts = pts;
 
@@ -205,7 +210,11 @@ size_t ck_distance::get_mpeg_sample_length(wrl::ComPtr<IMFSample> src, int64_t p
 	THROW_IF_NOT(avcodec_encode_video2(outputContext, &packet, &inFrame, &got_packet) == 0,
 		"Encoding Error.");
 	if (got_packet)
-		return packet.size;
+	{
+		auto size = packet.size;
+		av_free_packet(&packet);
+		return size;
+	}
 	else
 	{
 		skipped++;
@@ -228,9 +237,11 @@ void ck_distance::create_mpeg_encoder()
 
 	outputContext = avcodec_alloc_context3(mpegEncoder);
 	THROW_IF_NOT(outputContext, "Cannot Allocate Encoding Context.");
-	outputContext->bit_rate = width * height * 4;
+	outputContext->bit_rate = width * height * 400;
 	outputContext->width = width;
 	outputContext->height = height;
+	outputContext->max_b_frames = 0;
+	outputContext->gop_size = 2;
 	outputContext->time_base = { 1, 25 };
 	outputContext->pix_fmt = AVPixelFormat::AV_PIX_FMT_YUV420P;
 

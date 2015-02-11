@@ -21,23 +21,21 @@ ck_distance_service_impl::ck_distance_service_impl(size_t height)
 
 size_t ck_distance_service_impl::make_width_compatible(size_t width) noexcept
 {
-	if (width <= 96)
-		return 96;
-
-	// 16 的倍数
-	auto newWidth = width - width % 16;
-	if (newWidth < width)
-		newWidth += 16;
+	auto newWidth = width - width % 8;
+	if (newWidth < width) newWidth += 8;
 	return newWidth;
 }
 
-std::unique_ptr<sample_impl> ck_distance_service_impl::make_sample_compatible(sample_impl * sample)
+array_view<uint32_t, 2> ck_distance_service_impl::make_sample_compatible(sample_impl * sample)
 {
 	if (sample->height != height)
 		throw std::exception("height is not match.");
 
 	auto oldWidth = sample->width;
 	auto newWidth = make_width_compatible(oldWidth);
+
+	if (oldWidth == newWidth)
+		return sample->view;
 
 	auto oldView = sample->view;
 	array<uint32_t, 2> newData((int)height, (int)newWidth);
@@ -48,7 +46,7 @@ std::unique_ptr<sample_impl> ck_distance_service_impl::make_sample_compatible(sa
 	{
 		newView[idx] = oldView[idx];
 	});
-	return std::make_unique<sample_impl>(newView);
+	return std::move(newView);
 }
 
 ck_distance * ck_distance_service_impl::acquire_ck_distance_instance(size_t width)
@@ -70,8 +68,8 @@ float ASIKCALL ck_distance_service_impl::compute(sample* sampleA, sample* sample
 
 	auto x = make_sample_compatible((sample_impl*)sampleA);
 	auto y = make_sample_compatible((sample_impl*)sampleB);
-	auto ck_inst = acquire_ck_distance_instance(x->width);
-	return ck_inst->compute(x->view, y->view);
+	auto ck_inst = acquire_ck_distance_instance(x.extent[1]);
+	return ck_inst->compute(x, y);
 }
 
 void ASIKCALL CreateCKDistanceService(size_t height, std::unique_ptr<ck_distance_service>& service)

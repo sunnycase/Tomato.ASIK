@@ -59,6 +59,7 @@ std::vector<fingerprint> classifier_impl::compute_fingerprint(class_id_t class_i
 		else
 			compares.emplace_back(pair.second.get());
 	}
+	org_entropy = compute_entropy(targets.size(), compares.size(), spectrograms.size());
 
 	std::vector<fingerprint> prints;
 	auto max_length = std::min(this->max_length, max_spectrogram_length);
@@ -89,7 +90,7 @@ void classifier_impl::compute_fingerprint(std::vector<fingerprint>& prints,
 		for (size_t startIndex = 0; startIndex <= endIndex; startIndex++)
 		{
 			auto target_sample = target->get_sample(startIndex, finger_length);
-			auto value = evaluate_fingerprint(target_sample.get(), targets, compares);
+			auto value = evaluate_fingerprint(target_sample.get(), targets, compares, bestValue);
 			if (value > bestValue)
 			{
 				bestValue = value;
@@ -98,33 +99,55 @@ void classifier_impl::compute_fingerprint(std::vector<fingerprint>& prints,
 			}
 		}
 #if PRINT_LOG
-		std::cout << "-- Best fingerprint: Entropy " << bestValue.entropy
-			<< ", Threhold " << bestValue.threhold << ", Margin " << bestValue.margin << std::endl;
+		std::cout << "-- Best fingerprint: Index " << bestIndex <<
+			", Entropy Gain " << bestValue.entropy_gain << ", Threshold "
+			<< bestValue.threshold << ", Margin " << bestValue.margin << std::endl;
 #endif
-		prints.emplace_back(fingerprint{ std::move(bestSample), bestValue.threhold });
+		prints.emplace_back(fingerprint{ std::move(bestSample), bestValue.threshold });
 	}
 }
 
-classifier_impl::fingerprint_value classifier_impl::evaluate_fingerprint(sample * target, const std::vector<spectrogram_impl*>& targets, const std::vector<spectrogram_impl*>& compares)
+classifier_impl::fingerprint_value classifier_impl::evaluate_fingerprint(sample * target, const std::vector<spectrogram_impl*>& targets, const std::vector<spectrogram_impl*>& compares, const fingerprint_value& best_so_far)
 {
 	auto value = fingerprint_value::bad();
 
+	const auto pCount = targets.size();
+	const auto uCount = compares.size();
+	const auto totalCount = pCount + uCount;
+
+	std::multiset<float> target_d;
 	// true : target
 	// false : compare
 	std::vector<std::pair<bool, float>> distances;
 	for (const auto& pair : targets)
-		distances.emplace_back(std::make_pair(true, compute_distance(target, pair)));
+	{
+		auto distance = compute_distance(target, pair);
+		distances.emplace_back(std::make_pair(true, distance));
+		target_d.emplace(distance);
+	}
+
+	auto min_compare = std::numeric_limits<float>::max();
 	for (const auto& pair : compares)
-		distances.emplace_back(std::make_pair(false, compute_distance(target, pair)));
+	{
+		auto distance = compute_distance(target, pair);
+		distances.emplace_back(std::make_pair(false, distance));
+
+		if (distance < min_compare)
+		{
+			min_compare = distance;
+			auto left_p = std::distance(target_d.begin(), target_d.lower_bound(distance));
+			auto best_entropy = compute_entropy(left_p, 0, totalCount) +
+				compute_entropy(pCount - left_p, uCount, totalCount);
+			auto best_entropy_gain = org_entropy - best_entropy;
+			if (best_entropy_gain <= best_so_far.entropy_gain)
+				return value;
+		}
+	}
 
 	std::sort(distances.begin(), distances.end(),
 		[](const std::pair<bool, float>& left, const std::pair<bool, float>& right) {
 		return std::less<float>()(left.second, right.second);
 	});
-
-	const auto totalCount = distances.size();
-	const auto pCount = targets.size();
-	const auto uCount = compares.size();
 
 	auto prevDistance = distances.front().second;
 	size_t left_p = distances.front().first ? 1 : 0;
@@ -136,14 +159,19 @@ classifier_impl::fingerprint_value classifier_impl::evaluate_fingerprint(sample 
 		auto margin = cntDistance - prevDistance;
 		prevDistance = cntDistance;
 
-		auto right_p = pCount - left_p;
-		auto right_u = uCount - left_u;
+		if (margin != 0.0f)
+		{
+			auto right_p = pCount - left_p;
+			auto right_u = uCount - left_u;
 
-		fingerprint_value newValue = { compute_entropy(left_p, left_u, totalCount) +
-			compute_entropy(right_p, right_u, totalCount), threhold, margin };
+			auto entropy = compute_entropy(left_p, left_u, totalCount) +
+				compute_entropy(right_p, right_u, totalCount);
 
-		if (newValue > value)
-			value = newValue;
+			fingerprint_value newValue = { org_entropy - entropy, threhold, margin };
+
+			if (newValue > value)
+				value = newValue;
+		}
 
 		it->first ? left_p++ : left_u++;
 	}
@@ -171,8 +199,10 @@ float classifier_impl::compute_entropy(size_t x_count, size_t y_count, size_t to
 	float pX = float(x_count) / range_count;
 	float pY = float(y_count) / range_count;
 
-	return (-(pX == 0.f ? 0.f : pX * std::log(pX)) -
-		(pY == 0.f ? 0.f : pY * std::log(pY))) * (range_count / total_count);
+	auto eX = pX == 0.f ? 0.f : pX * std::log2(pX);
+	auto eY = pY == 0.f ? 0.f : pY * std::log2(pY);
+
+	return (-eX - eY) * (range_count / total_count);
 }
 
 void ASIKCALL CreateClassifier(size_t min_length, size_t max_length, std::unique_ptr<NS_ASIK_CORE_CLASSIFIER::classifier>& classi)

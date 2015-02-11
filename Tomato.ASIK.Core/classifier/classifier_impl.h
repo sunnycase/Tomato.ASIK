@@ -14,25 +14,26 @@ NSDEF_ASIK_CORE_CLASSIFIER
 struct fingerprint
 {
 	std::shared_ptr<sample> sample;
-	float threhold;
+	float threshold;
 };
 
 class classifier_impl : public classifier
 {
 	struct fingerprint_value
 	{
-		float entropy;
-		float threhold;
+		float entropy_gain;
+		float threshold;
 		float margin;
 
 		bool operator >(const fingerprint_value& value) const noexcept
 		{
-			return entropy < value.entropy || (entropy == value.entropy && margin > value.margin);
+			return entropy_gain > value.entropy_gain || 
+				(entropy_gain == value.entropy_gain && margin > value.margin);
 		}
 
 		static fingerprint_value bad() noexcept
 		{
-			return { std::numeric_limits<float>::max(), 0.0f, 0.0f };
+			return { 0.0f, 0.0f, 0.0f };
 		}
 	};
 
@@ -49,7 +50,7 @@ public:
 private:
 	std::vector<fingerprint> compute_fingerprint(class_id_t class_id);
 	void compute_fingerprint(std::vector<fingerprint>& prints, const std::vector<spectrogram_impl*>& targets, const std::vector<spectrogram_impl*>& compares, size_t finger_length);
-	fingerprint_value evaluate_fingerprint(sample* target, const std::vector<spectrogram_impl*>& targets, const std::vector<spectrogram_impl*>& compares);
+	fingerprint_value evaluate_fingerprint(sample* target, const std::vector<spectrogram_impl*>& targets, const std::vector<spectrogram_impl*>& compares, const fingerprint_value& best_so_far);
 	float compute_distance(sample* target, spectrogram_impl* compare);
 
 	static float compute_entropy(size_t x_count, size_t y_count, size_t total_count);
@@ -58,6 +59,7 @@ private:
 	const size_t max_length;
 	size_t max_spectrogram_length;
 	ck_distance_service* ck_service;
+	float org_entropy;
 
 	std::set<class_id_t> class_ids;
 	spectrograms_t spectrograms;
