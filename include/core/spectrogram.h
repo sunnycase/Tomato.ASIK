@@ -21,13 +21,13 @@ public:
 	virtual void ASIKCALL set_step_size(size_t value) = 0;
 	virtual void ASIKCALL draw() = 0;
 
-	__declspec(property(get = get_length)) size_t length;
-	virtual size_t ASIKCALL get_length() = 0;
-	virtual std::unique_ptr<sample> ASIKCALL get_sample(size_t startIndex, size_t length) = 0;
+	__declspec(property(get = get_time_extent)) size_t time_extent;
+	virtual size_t ASIKCALL get_time_extent() = 0;
+	virtual sample ASIKCALL get_sample(size_t start_time, size_t time_extent) = 0;
 
-	std::unique_ptr<sample> get_sample()
+	sample get_sample()
 	{
-		return get_sample(0, length);
+		return get_sample(0, time_extent);
 	}
 };
 

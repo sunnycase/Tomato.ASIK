@@ -2,6 +2,7 @@
 using Sparrow.Chart;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -89,10 +90,10 @@ namespace Tomato.ASIK.IDE
         {
             uint width, height;
             provider.PrepareSpectrogram(out width, out height);
-            var specData = new uint[width * height];
+            var specData = new byte[width * height];
             provider.DrawSpectrogram(specData);
-            var img = BitmapSource.Create((int)width, (int)height, 96.0, 96.0, PixelFormats.Bgr32,
-                null, specData, (int)width * 4);
+            var img = BitmapSource.Create((int)width, (int)height, 96.0, 96.0, PixelFormats.Gray8,
+                BitmapPalettes.Gray256, specData, (int)width);
 
             return img;
         }

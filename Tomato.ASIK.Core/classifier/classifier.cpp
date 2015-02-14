@@ -24,8 +24,8 @@ classifier_impl::classifier_impl(size_t min_length, size_t max_length)
 
 void ASIKCALL classifier_impl::add_input(class_id_t class_id, std::unique_ptr<spectrogram>&& spectrogram)
 {
-	if (spectrogram->length > max_spectrogram_length)
-		max_spectrogram_length = spectrogram->length;
+	if (spectrogram->time_extent > max_spectrogram_length)
+		max_spectrogram_length = spectrogram->time_extent;
 
 	spectrograms.emplace(class_id,
 		std::unique_ptr<spectrogram_impl>((spectrogram_impl*)spectrogram.release()));
@@ -41,10 +41,15 @@ void ASIKCALL classifier_impl::compute_fingerprint()
 {
 	fingerprints.clear();
 	for (auto&& id : class_ids)
-		fingerprints.emplace(id, compute_fingerprint(id));
+		fingerprints.emplace(id, get_fingerprint(id));
 }
 
-std::vector<fingerprint> classifier_impl::compute_fingerprint(class_id_t class_id)
+void ASIKCALL classifier_impl::compute_fingerprint(class_id_t class_id)
+{
+	fingerprints.emplace(class_id, get_fingerprint(class_id));
+}
+
+std::vector<fingerprint> classifier_impl::get_fingerprint(class_id_t class_id)
 {
 #if PRINT_LOG
 	std::cout << "Computing Class " << class_id << "..." << std::endl;
@@ -83,19 +88,19 @@ void classifier_impl::compute_fingerprint(std::vector<fingerprint>& prints,
 	{
 		size_t bestIndex = 0;
 		auto bestValue = fingerprint_value::bad();
-		std::shared_ptr<sample> bestSample;
+		std::unique_ptr<sample> bestSample;
 
-		auto endIndex = target->length - finger_length;
-		assert(target->length >= finger_length);
+		auto endIndex = target->time_extent - finger_length;
+		assert(target->time_extent >= finger_length);
 		for (size_t startIndex = 0; startIndex <= endIndex; startIndex++)
 		{
 			auto target_sample = target->get_sample(startIndex, finger_length);
-			auto value = evaluate_fingerprint(target_sample.get(), targets, compares, bestValue);
+			auto value = evaluate_fingerprint(target_sample, targets, compares, bestValue);
 			if (value > bestValue)
 			{
 				bestValue = value;
 				bestIndex = startIndex;
-				bestSample = std::move(target_sample);
+				bestSample = std::make_unique<sample>(target_sample);
 			}
 		}
 #if PRINT_LOG
@@ -103,11 +108,11 @@ void classifier_impl::compute_fingerprint(std::vector<fingerprint>& prints,
 			", Entropy Gain " << bestValue.entropy_gain << ", Threshold "
 			<< bestValue.threshold << ", Margin " << bestValue.margin << std::endl;
 #endif
-		prints.emplace_back(fingerprint{ std::move(bestSample), bestValue.threshold });
+		prints.emplace_back(fingerprint{ *bestSample, bestValue.threshold });
 	}
 }
 
-classifier_impl::fingerprint_value classifier_impl::evaluate_fingerprint(sample * target, const std::vector<spectrogram_impl*>& targets, const std::vector<spectrogram_impl*>& compares, const fingerprint_value& best_so_far)
+classifier_impl::fingerprint_value classifier_impl::evaluate_fingerprint(const sample& target, const std::vector<spectrogram_impl*>& targets, const std::vector<spectrogram_impl*>& compares, const fingerprint_value& best_so_far)
 {
 	auto value = fingerprint_value::bad();
 
@@ -132,7 +137,7 @@ classifier_impl::fingerprint_value classifier_impl::evaluate_fingerprint(sample 
 		auto distance = compute_distance(target, pair);
 		distances.emplace_back(std::make_pair(false, distance));
 
-		if (distance < min_compare)
+		/*if (distance < min_compare)
 		{
 			min_compare = distance;
 			auto left_p = std::distance(target_d.begin(), target_d.lower_bound(distance));
@@ -141,7 +146,7 @@ classifier_impl::fingerprint_value classifier_impl::evaluate_fingerprint(sample 
 			auto best_entropy_gain = org_entropy - best_entropy;
 			if (best_entropy_gain <= best_so_far.entropy_gain)
 				return value;
-		}
+		}*/
 	}
 
 	std::sort(distances.begin(), distances.end(),
@@ -178,15 +183,15 @@ classifier_impl::fingerprint_value classifier_impl::evaluate_fingerprint(sample 
 	return value;
 }
 
-float classifier_impl::compute_distance(sample * target, spectrogram_impl* compare)
+float classifier_impl::compute_distance(const sample& target, spectrogram_impl* compare)
 {
 	float bestDistance = std::numeric_limits<float>::max();
-	auto finger_length = target->width;
-	auto endIndex = compare->length - finger_length;
+	auto finger_length = target.time_extent;
+	auto endIndex = compare->time_extent - finger_length;
 	for (size_t startIndex = 0; startIndex <= endIndex; startIndex++)
 	{
 		auto compare_sample = compare->get_sample(startIndex, finger_length);
-		auto distance = ck_service->compute(target, compare_sample.get());
+		auto distance = ck_service->compute(target, compare_sample);
 		if (distance < bestDistance)
 			bestDistance = distance;
 	}

@@ -26,6 +26,7 @@ public:
 
 	virtual void ASIKCALL add_input(class_id_t class_id, std::unique_ptr<spectrogram>&& spectrogram) = 0;
 	virtual void ASIKCALL compute_fingerprint() = 0;
+	virtual void ASIKCALL compute_fingerprint(class_id_t class_id) = 0;
 	virtual void ASIKCALL set_ck_distance_service(ck_distance_service* service) = 0;
 };
 

@@ -49,12 +49,12 @@ std::unique_ptr<spectrogram> produce_spectrogram(const WAVEFORMATEX* format, con
 	spectrogram->draw();
 
 	auto sample = spectrogram->get_sample();
-	auto image_data = sample->data;
+	auto image_data = sample.data;
 
 	auto time2 = clock();
 
 	auto relFileName = fileName.substr(fileName.find_last_of(L'\\') + 1);
-	std::wcout << relFileName << L'(' << sample->width << L'x' << sample->height << L") Used: "
+	std::wcout << relFileName << L'(' << sample.freq_extent << L'x' << sample.time_extent << L") Used: "
 		<< float(time2 - time1) / CLOCKS_PER_SEC << L"sec." << std::endl;
 	return std::move(spectrogram);
 }
@@ -83,9 +83,9 @@ int _tmain(int argc, _TCHAR* argv[])
 
 	std::unique_ptr<ck_distance_service> ck;
 	CreateCKDistanceService(256, ck);
-#if 1
+#if 0
 	std::unique_ptr<classifier> clsifier;
-	CreateClassifier(4, 20, clsifier);
+	CreateClassifier(1, 20, clsifier);
 	class_id_t ids[] = { 3, 4, 4, 5, 1, 5, 3, 1, 5, 2,
 	5, 2, 3, 2, 4, 4, 2, 4, 2, 3};
 	for (size_t i = 0; i < ARRAYSIZE(ids); i++)
@@ -93,7 +93,7 @@ int _tmain(int argc, _TCHAR* argv[])
 		clsifier->add_input(ids[i], std::move(specs[i]));
 	}
 	clsifier->set_ck_distance_service(ck.get());
-	clsifier->compute_fingerprint();
+	clsifier->compute_fingerprint(3);
 #else
 
 	for (size_t x = 0; x < 10; x++)
@@ -102,9 +102,9 @@ int _tmain(int argc, _TCHAR* argv[])
 		{
 			std::wcout << std::setfill(L'0') << std::setw(4) << x + 1 << L".wav VS " <<
 				std::setfill(L'0') << std::setw(4) << y + 1 << L".wav CK Distance: ";
-			auto sampleX = specs[x]->get_sample(32, 6);
-			auto sampleY = specs[y]->get_sample(32, 6);
-			auto dist = ck->compute(sampleX.get(), sampleY.get());
+			auto sampleX = specs[x]->get_sample(0, 62);
+			auto sampleY = specs[y]->get_sample(0, 62);
+			auto dist = ck->compute(sampleX, sampleY);
 			std::wcout << dist << std::endl;
 		}
 	}

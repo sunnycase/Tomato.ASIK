@@ -38,7 +38,7 @@
             <sparrow:LineSeries Label="Value" UseSinglePart="True"/>
         </sparrow:SparrowChart>
         <Grid Grid.Row="2">
-            <Image Name="img_Spectrogram" Stretch="Fill"/>
+            <Image Name="img_Spectrogram" Stretch="Uniform"/>
         </Grid>
     </Grid>
 </com:Window>

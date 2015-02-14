@@ -69,9 +69,6 @@
     <ClInclude Include="..\include\core\sample.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="sample_impl.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="ck_distance_service_impl.h">
       <Filter>头文件</Filter>
     </ClInclude>
@@ -103,9 +100,6 @@
     </ClCompile>
     <ClCompile Include="classifier\classifier.cpp">
       <Filter>源文件\classifier</Filter>
-    </ClCompile>
-    <ClCompile Include="sample.cpp">
-      <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="ck_distance_service.cpp">
       <Filter>源文件</Filter>

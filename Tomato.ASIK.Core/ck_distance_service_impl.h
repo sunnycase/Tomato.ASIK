@@ -7,7 +7,6 @@
 #pragma once
 #include "../include/core/ck_distance_service.h"
 #include "ck_distance.h"
-#include "sample_impl.h"
 
 namespace std
 {
@@ -28,16 +27,13 @@ class ck_distance_service_impl : public ck_distance_service
 {
 	typedef std::pair<sample*, size_t> sample_cache_item_t;
 public:
-	ck_distance_service_impl(size_t height);
+	ck_distance_service_impl(size_t freq_extent);
 
-	virtual float ASIKCALL compute(sample* sampleA, sample* sampleB);
+	virtual float ASIKCALL compute(const sample& sampleA, const sample& sampleB);
 private:
-	static size_t make_width_compatible(size_t width) noexcept;
-
-	concurrency::array_view<uint32_t, 2> make_sample_compatible(sample_impl* sample);
-	ck_distance* acquire_ck_distance_instance(size_t width);
+	ck_distance* acquire_ck_distance_instance(size_t time_extent);
 private:
-	const size_t height;
+	const size_t freq_extent;
 	std::unordered_map<size_t, std::unique_ptr<ck_distance>> ck_instances;
 	//std::unordered_map<sample_cache_item_t, std::unique_ptr<sample_impl>> sample_cache;
 };

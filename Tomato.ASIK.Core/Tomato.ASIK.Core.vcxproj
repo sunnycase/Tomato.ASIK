@@ -95,7 +95,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>mfuuid.lib;Mfplat.lib;Mfreadwrite.lib;dxguid.lib;Strmiids.lib;avcodec.lib;avutil.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>mfuuid.lib;Mfplat.lib;Mfreadwrite.lib;Strmiids.lib;avcodec.lib;swscale.lib;avutil.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -109,7 +109,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>mfuuid.lib;Mfplat.lib;Mfreadwrite.lib;dxguid.lib;Strmiids.lib;avcodec.lib;avutil.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>mfuuid.lib;Mfplat.lib;Mfreadwrite.lib;Strmiids.lib;avcodec.lib;swscale.lib;avutil.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -127,7 +127,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>mfuuid.lib;Mfplat.lib;Mfreadwrite.lib;dxguid.lib;Strmiids.lib;avcodec.lib;avutil.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>mfuuid.lib;Mfplat.lib;Mfreadwrite.lib;Strmiids.lib;avcodec.lib;swscale.lib;avutil.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
     </Link>
   </ItemDefinitionGroup>
@@ -146,7 +146,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>mfuuid.lib;Mfplat.lib;Mfreadwrite.lib;dxguid.lib;Strmiids.lib;avcodec.lib;avutil.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>mfuuid.lib;Mfplat.lib;Mfreadwrite.lib;Strmiids.lib;avcodec.lib;swscale.lib;avutil.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -164,7 +164,6 @@
     <ClInclude Include="classifier\classifier_impl.h" />
     <ClInclude Include="io\mf_io_provider.h" />
     <ClInclude Include="io\mf_source_reader_handler.h" />
-    <ClInclude Include="sample_impl.h" />
     <ClInclude Include="spectrogram_impl.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
@@ -189,7 +188,6 @@
     </ClCompile>
     <ClCompile Include="io\mf_io_provider.cpp" />
     <ClCompile Include="io\mf_source_reader_handler.cpp" />
-    <ClCompile Include="sample.cpp" />
     <ClCompile Include="spectrogram.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>

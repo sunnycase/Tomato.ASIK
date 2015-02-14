@@ -6,14 +6,13 @@
 // 创建日期: 2015-02-05
 #pragma once
 #include "../../include/core/classifier/classifier.h"
-#include "../sample_impl.h"
 #include "../spectrogram_impl.h"
 
 NSDEF_ASIK_CORE_CLASSIFIER
 
 struct fingerprint
 {
-	std::shared_ptr<sample> sample;
+	sample sample;
 	float threshold;
 };
 
@@ -47,11 +46,12 @@ public:
 	virtual void ASIKCALL add_input(class_id_t class_id, std::unique_ptr<spectrogram>&& spectrogram);
 	virtual void ASIKCALL set_ck_distance_service(ck_distance_service* service);
 	virtual void ASIKCALL compute_fingerprint();
+	virtual void ASIKCALL compute_fingerprint(class_id_t class_id);
 private:
-	std::vector<fingerprint> compute_fingerprint(class_id_t class_id);
+	std::vector<fingerprint> get_fingerprint(class_id_t class_id);
 	void compute_fingerprint(std::vector<fingerprint>& prints, const std::vector<spectrogram_impl*>& targets, const std::vector<spectrogram_impl*>& compares, size_t finger_length);
-	fingerprint_value evaluate_fingerprint(sample* target, const std::vector<spectrogram_impl*>& targets, const std::vector<spectrogram_impl*>& compares, const fingerprint_value& best_so_far);
-	float compute_distance(sample* target, spectrogram_impl* compare);
+	fingerprint_value evaluate_fingerprint(const sample& target, const std::vector<spectrogram_impl*>& targets, const std::vector<spectrogram_impl*>& compares, const fingerprint_value& best_so_far);
+	float compute_distance(const sample& target, spectrogram_impl* compare);
 
 	static float compute_entropy(size_t x_count, size_t y_count, size_t total_count);
 private:

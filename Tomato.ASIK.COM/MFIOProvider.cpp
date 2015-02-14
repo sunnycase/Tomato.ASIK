@@ -78,9 +78,9 @@ STDMETHODIMP CMFIOProvider::PrepareSpectrogram(DWORD* width, DWORD* height)
 	{
 		spectr->draw();
 		auto sample = spectr->get_sample();
-		specData = sample->data;
-		img_Width = sample->width;
-		img_Height = sample->height;
+		specData.assign(sample.data, sample.data + sample.data_length);
+		img_Width = sample.freq_extent;
+		img_Height = sample.time_extent;
 	}
 	*width = img_Width;
 	*height = img_Height;
@@ -89,7 +89,7 @@ STDMETHODIMP CMFIOProvider::PrepareSpectrogram(DWORD* width, DWORD* height)
 
 STDMETHODIMP CMFIOProvider::DrawSpectrogram(SAFEARRAY * buffer)
 {
-	memcpy_s((FLOAT*)buffer->pvData, buffer->rgsabound[0].cElements * sizeof(uint32_t),
-		specData.data(), specData.size() * sizeof(uint32_t));
+	memcpy_s((FLOAT*)buffer->pvData, buffer->rgsabound[0].cElements * sizeof(byte),
+		specData.data(), specData.size() * sizeof(byte));
 	return S_OK;
 }

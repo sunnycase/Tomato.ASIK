@@ -12,34 +12,31 @@ NSDEF_ASIK_CORE
 
 class ck_distance
 {
+	typedef std::pair<AVFrame, std::unique_ptr<byte[]>> convert_output_t;
 public:
 	ck_distance(size_t width, size_t height);
 	~ck_distance() noexcept;
 
-	virtual float ASIKCALL compute(sample* sampleA, sample* sampleB);
-
-	float compute(concurrency::array_view<uint32_t, 2> x, concurrency::array_view<uint32_t, 2> y);
+	float compute(const sample& sampleA, const sample& sampleB);
 private:
 	static void initialize_mf();
 	static void uninitialize_mf() noexcept;
 private:
 	void create_mpeg_encoder();
 
-	void create_mf_rgb32toi420_converter();
-	void configure_rgb32toi420_converter();
+	void create_g8toi420_converter();
 
-	wrl::ComPtr<IMFSample> convert_rgb32_to_i420_sample(const concurrency::array_view<uint32_t, 2>& src);
-	size_t get_mpeg_sample_length(wrl::ComPtr<IMFSample> src1, wrl::ComPtr<IMFSample> src2);
-	size_t get_mpeg_sample_length(wrl::ComPtr<IMFSample> src, int64_t pts, size_t& skipped);
+	convert_output_t convert_rgb32_to_i420_sample(const sample& src);
+	size_t get_mpeg_sample_length(convert_output_t& src1, convert_output_t& src2);
+	size_t get_mpeg_sample_length(convert_output_t& src, int64_t pts, size_t& skipped);
 	void reset_mpeg_encoder();
 private:
-	wrl::ComPtr<IMFTransform> rgb32toi420Converter;
 	AVCodec* mpegEncoder;
 	AVCodecContext* outputContext;
+	SwsContext* g8toi420Context;
 private:
-	wrl::ComPtr<IMFMediaType> rgbType;
-	wrl::ComPtr<IMFMediaType> yuvType;
 	size_t width, height;
+	size_t decode_height;
 };
 
 NSED_ASIK_CORE

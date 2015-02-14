@@ -38,6 +38,7 @@ extern "C" {
 
 #include <libavutil/opt.h>
 #include <libavcodec/avcodec.h>
+#include <libswscale/swscale.h>
 
 #ifdef __cplusplus
 }
